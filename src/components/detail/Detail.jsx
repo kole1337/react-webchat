@@ -1,11 +1,34 @@
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { useChatStore } from "../../lib/chatStore";
+import { auth, db } from "../../lib/firebase"
+import { useUserStore } from "../../lib/userStore";
 import "./detail.css"
 
 const Detail = () => {
+
+
+    const { chatId, user, isCurrentUserBlocked, isReceiverBlocked, changeBlock } = useChatStore();
+    const { currentUser } = useUserStore();
+
+    const handleBlock = async () => {
+        if (!user) return;
+
+        const userDocRef = doc(db, "users", currentUser.id)
+        try {
+            await updateDoc(userDocRef, {
+                blocked: isReceiverBlocked ? arrayRemove(user.id) : arrayUnion(user.id)
+            })
+            changeBlock()
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
         <div className='detail'>
             <div className="user">
-                <img src="./avatar.png" alt="" />
-                <h2>Jane Doe</h2>
+                <img src={user?.avatar || "./avatar.png"} alt="" />
+                <h2>{user?.username}</h2>
                 <p>Lorem ipsum dolor sit amet.</p>
             </div>
             <div className="info">
@@ -33,7 +56,7 @@ const Detail = () => {
                                 <img src="https://t0.gstatic.com/licensed-image?q=tbn:ANd9GcTZCSmCzmIPm0up8wmW566cK5w3sSTUChT5UnaU3VnFxrHwoRNSnks0xUBmj2r2oeJk" alt="" />
                                 <span>Cool Kat</span>
                             </div>
-                            <img src="./download.png" alt="" className="icon"/>
+                            <img src="./download.png" alt="" className="icon" />
                         </div>
                         <div className="photoItem">
                             <div className="photoDetail">
@@ -41,7 +64,7 @@ const Detail = () => {
                                 <img src="https://t0.gstatic.com/licensed-image?q=tbn:ANd9GcTZCSmCzmIPm0up8wmW566cK5w3sSTUChT5UnaU3VnFxrHwoRNSnks0xUBmj2r2oeJk" alt="" />
                                 <span>Cool Kat</span>
                             </div>
-                            <img src="./download.png" alt="" className="icon"/>
+                            <img src="./download.png" alt="" className="icon" />
                         </div>
                         <div className="photoItem">
                             <div className="photoDetail">
@@ -49,7 +72,7 @@ const Detail = () => {
                                 <img src="https://t0.gstatic.com/licensed-image?q=tbn:ANd9GcTZCSmCzmIPm0up8wmW566cK5w3sSTUChT5UnaU3VnFxrHwoRNSnks0xUBmj2r2oeJk" alt="" />
                                 <span>Cool Kat</span>
                             </div>
-                            <img src="./download.png" alt="" className="icon"/>
+                            <img src="./download.png" alt="" className="icon" />
                         </div>
                         <div className="photoItem">
                             <div className="photoDetail">
@@ -57,7 +80,7 @@ const Detail = () => {
                                 <img src="https://t0.gstatic.com/licensed-image?q=tbn:ANd9GcTZCSmCzmIPm0up8wmW566cK5w3sSTUChT5UnaU3VnFxrHwoRNSnks0xUBmj2r2oeJk" alt="" />
                                 <span>Cool Kat</span>
                             </div>
-                            <img src="./download.png" alt="" className="icon"/>
+                            <img src="./download.png" alt="" className="icon" />
                         </div>
                         <div className="photoItem">
                             <div className="photoDetail">
@@ -65,7 +88,7 @@ const Detail = () => {
                                 <img src="https://t0.gstatic.com/licensed-image?q=tbn:ANd9GcTZCSmCzmIPm0up8wmW566cK5w3sSTUChT5UnaU3VnFxrHwoRNSnks0xUBmj2r2oeJk" alt="" />
                                 <span>Cool Kat</span>
                             </div>
-                            <img src="./download.png" alt="" className="icon"/>
+                            <img src="./download.png" alt="" className="icon" />
                         </div>
                     </div>
                 </div>
@@ -75,11 +98,15 @@ const Detail = () => {
                         <img src="./arrowUp.png" alt="" />
                     </div>
                 </div>
-                <button>Block User</button>
-                <button className="logout">Logout</button>
+                <button onClick={handleBlock}>
+                    {
+                        isCurrentUserBlocked ? "You are blocked" : isReceiverBlocked ? "User is blocked" : "Block user"
+                    }
+                </button>
+                <button className="logout" onClick={() => auth.signOut()}>Logout</button>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Detail
